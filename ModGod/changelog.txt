@@ -1,0 +1,12 @@
+Changelog for ModGod by CubieX
+------------------------------
+
+V. 0.1c
+- added config file
+- items to be treated as service items is now configurable via config file
+- debug messages toggleable via config file
+- added reload command
+- OPs do no longer enter service mode, as they can use ingame god mode 
+
+V. 0.1
+- Initial version
