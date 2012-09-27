@@ -32,7 +32,7 @@ public class ModGodEntityListener implements Listener
         this.log = log;
         
         plugin.getServer().getPluginManager().registerEvents(this, plugin);    
-        eLog.info("Bin im onPlayerLogin");
+        log.info("Bin im onPlayerLogin");
     }
 
   //----------------------------------------------------------------------------------------------------    
