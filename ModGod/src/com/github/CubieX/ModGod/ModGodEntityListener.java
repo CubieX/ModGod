@@ -31,8 +31,7 @@ public class ModGodEntityListener implements Listener
         this.configHandler = configHandler;
         this.log = log;
         
-        plugin.getServer().getPluginManager().registerEvents(this, plugin);    
-        log.info("Bin im onPlayerLogin");
+        plugin.getServer().getPluginManager().registerEvents(this, plugin);
     }
 
   //----------------------------------------------------------------------------------------------------    

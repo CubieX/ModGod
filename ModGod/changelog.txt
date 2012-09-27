@@ -1,6 +1,9 @@
 Changelog for ModGod by CubieX
 ------------------------------
 
+V. 0.2
+- built against Bukkit 1.3.1-R2.0
+
 V. 0.1.1
 - code cleanup and re-structuring
 
