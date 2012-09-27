@@ -1,6 +1,9 @@
 Changelog for ModGod by CubieX
 ------------------------------
 
+V. 0.1.1
+- code cleanup and re-structuring
+
 V. 0.1c
 - added config file
 - items to be treated as service items is now configurable via config file
