@@ -35,19 +35,28 @@ public class ModGodEntityListener implements Listener
     }
 
   //----------------------------------------------------------------------------------------------------    
-    @EventHandler // event has Normal priority
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerItemHeld(PlayerItemHeldEvent event)
-    {            
+    {       	
         if(!event.getPlayer().isOp()) //if player is op, he does not need service mode. He can use godmode from game.
-        {
+        {        	        	
+        	if(event.getPlayer().getLocation().getWorld().getName().toLowerCase().contains("nether"))
+        	{
+        		if(!hasNetherPerms(event.getPlayer()))
+        		{
+        		    return; // player is in the nether but has no permission to use ModGod in the nether. So leave handler.
+        		}
+        	}
+        	
             boolean doContinue = false;
+            
             if(configHandler.getConfig().getBoolean("debug")){log.info("bin im onPlayerItemEvent");}        
             if(event.getPlayer().hasPermission("modgod.service"))
             {
                 if(configHandler.getConfig().getBoolean("debug")){log.info("permission erkannt");}    
                 ItemStack newItem;            
                 newItem = event.getPlayer().getInventory().getItem(event.getNewSlot());
-                if (newItem != null) // is null if empty slot
+                if (null != newItem) // is null if empty slot
                 {                    
                     if(configHandler.getConfig().getBoolean("debug")){log.info("ItemID: " + String.valueOf(newItem.getTypeId()));}
 
@@ -94,7 +103,7 @@ public class ModGodEntityListener implements Listener
                         playersInSM.add(event.getPlayer().getName());
                     }                            
                 }      
-                else // Player with permission has no service item in hand, so delete him from the List if hes on it.
+                else // Player with permission has no service item in hand, so delete him from the List if he's on it.
                 {
                     if(configHandler.getConfig().getBoolean("debug")){log.info("Kein ServiceItem erkannt");}
                     if(playersInSM.contains(event.getPlayer().getName()))
@@ -109,7 +118,7 @@ public class ModGodEntityListener implements Listener
     }  
 
     //----------------------------------------------------------------------------------------------
-    @EventHandler // event has Normal priority
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onInventoryClose(InventoryCloseEvent event)
     {
         if(!event.getPlayer().isOp()) //if player is op, he does not need service mode. He can use godmode from game.
@@ -183,7 +192,7 @@ public class ModGodEntityListener implements Listener
     }
 
     //----------------------------------------------------------------------------------------------------
-    @EventHandler
+    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
     public void onPlayerDamageEvent (EntityDamageEvent event)
     {
         if(event.getEntity() instanceof Player)
@@ -196,5 +205,17 @@ public class ModGodEntityListener implements Listener
                 event.setCancelled(true); // if yes, dont apply damage (e.g. from falling into lava or creeper explosion)
             }    
         }
+    }
+    
+    private boolean hasNetherPerms(Player playerToCheck)
+    {
+        boolean hasPermission = false;
+        
+    	if(playerToCheck.hasPermission("modgod.nether"))
+    	{
+    	    hasPermission = true;
+    	}
+    	
+    	return (hasPermission);
     }
 }
