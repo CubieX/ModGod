@@ -1,0 +1,13 @@
+# do NOT change the config version!
+config_version: 1
+# set locale for user dialog messages
+language: de
+# enable debug output
+debug: false
+# List of items that trigger ModGod (not extendable!)
+FLOWING_WATER: true
+STILL_WATER: true
+FLOWING_LAVA: true
+STILL_LAVA: true
+FIRE: true
+ICE_BLOCK: true

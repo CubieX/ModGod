@@ -2,18 +2,6 @@ package com.github.CubieX.ModGod;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
-
-import org.bukkit.ChatColor;
-import org.bukkit.command.Command;
-import org.bukkit.command.CommandSender;
-import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDamageEvent;
-import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerItemHeldEvent;
-import org.bukkit.event.player.PlayerLoginEvent;
-import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ModGod extends JavaPlugin
@@ -25,6 +13,8 @@ public class ModGod extends JavaPlugin
     private ModGodCommandHandler myComHandler = null;
     private ModGodConfigHandler configHandler = null;
     private ModGodEntityListener eListener = null;
+    
+    static boolean debug = false;
 
     @Override
     public void onEnable()
@@ -37,6 +27,20 @@ public class ModGod extends JavaPlugin
 
         myComHandler = new ModGodCommandHandler(this, configHandler, log);
         getCommand("mg").setExecutor(myComHandler);       
+    }
+    
+    public void readConfigValues()
+    {
+        if("true".equalsIgnoreCase(this.getConfig().getString("debug")))
+        {
+            debug = true;
+        }
+        else
+        {
+            debug = false;
+        }
+        
+        
     }
 
     @Override

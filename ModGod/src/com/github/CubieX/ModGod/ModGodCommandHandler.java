@@ -22,14 +22,15 @@ public class ModGodCommandHandler implements CommandExecutor
         this.log = log;
     }
 
-    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
+    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
+    {
         Player player = null;
         if (sender instanceof Player) 
         {
             player = (Player) sender;
         }
 
-        if(configHandler.getConfig().getBoolean("debug")){log.info("onCommand");}
+        if(ModGod.debug){log.info("onCommand");}
         if (cmd.getName().equalsIgnoreCase("mg"))
         { // If the player typed /mf then do the following... (can be run from console also)
             if (args.length == 0)
@@ -47,7 +48,7 @@ public class ModGodCommandHandler implements CommandExecutor
                 {            
                     if(sender.hasPermission("modgod.reload"))
                     {                        
-                        configHandler.getConfig();
+                        configHandler.reloadConfig(sender);
                         sender.sendMessage("[" + ChatColor.BLUE + "Info" + ChatColor.WHITE + "] " + ChatColor.YELLOW + "ModGod " + plugin.getDescription().getVersion() + " reloaded!");
                         return true;
                     }
