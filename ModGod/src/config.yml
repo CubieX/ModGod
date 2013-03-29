@@ -11,3 +11,4 @@ FLOWING_LAVA: true
 STILL_LAVA: true
 FIRE: true
 ICE_BLOCK: true
+BEDROCK: true

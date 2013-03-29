@@ -1,5 +1,8 @@
 Changelog for ModGod by CubieX
 ------------------------------
+V0.4.1
+- added Bedrock to service items
+
 V0.4.0
 - deactivated ModGod in "The End"
 - preparations for introduction of a delay in activating Service Mode

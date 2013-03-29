@@ -95,7 +95,12 @@ public class ModGodEntityListener implements Listener
                      if(plugin.getConfig().getBoolean("ICE_BLOCK")){
                         doContinue = true;
                      }
-                     break;                                        
+                     break;
+                  case 7:
+                     if(plugin.getConfig().getBoolean("BEDROCK")){
+                        doContinue = true;
+                     }
+                     break;
                   }
                }
                if(doContinue)
@@ -172,7 +177,12 @@ public class ModGodEntityListener implements Listener
                   if(plugin.getConfig().getBoolean("ICE_BLOCK")){
                      doContinue = true;                        
                   }
-                  break;                                    
+                  break;
+               case 7:
+                  if(plugin.getConfig().getBoolean("BEDROCK")){
+                     doContinue = true;
+                  }
+                  break;
                }
             } 
             if(doContinue)
