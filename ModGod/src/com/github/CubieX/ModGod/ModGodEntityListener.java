@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.logging.Logger;
 
 import org.bukkit.ChatColor;
+import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
 import org.bukkit.event.EventHandler;
@@ -20,13 +21,11 @@ public class ModGodEntityListener implements Listener
    ArrayList<String> playersInSM = new ArrayList<String>();
    private ModGod plugin = null;
    private ModGodConfigHandler configHandler = null;
-   private Logger log = null;
 
-   public ModGodEntityListener(ModGod plugin, ModGodConfigHandler configHandler, Logger log)
+   public ModGodEntityListener(ModGod plugin, ModGodConfigHandler configHandler)
    {        
       this.plugin = plugin;
       this.configHandler = configHandler;
-      this.log = log;
 
       plugin.getServer().getPluginManager().registerEvents(this, plugin);
    }
@@ -34,12 +33,12 @@ public class ModGodEntityListener implements Listener
    //----------------------------------------------------------------------------------------------------    
    @EventHandler(priority = EventPriority.NORMAL, ignoreCancelled = true)
    public void onPlayerItemHeld(PlayerItemHeldEvent event)
-   {   
+   {
       try
       {
          if(!event.getPlayer().isOp()) //if player is op, he does not need service mode. He can use godmode from game.
          {                       
-            if(event.getPlayer().getLocation().getWorld().getName().toLowerCase().contains("nether"))
+            if(event.getPlayer().getWorld().getEnvironment().equals(Environment.NETHER))
             {
                if(!hasNetherPerms(event.getPlayer()))
                {
@@ -47,22 +46,22 @@ public class ModGodEntityListener implements Listener
                }
             }
 
-            if(event.getPlayer().getLocation().getWorld().getName().toLowerCase().contains("the_end"))
+            if(event.getPlayer().getWorld().getEnvironment().equals(Environment.THE_END))
             {               
                return; // player is in the end. ModGod does not work here. So leave handler.                
             }
 
             boolean doContinue = false;
 
-            if(ModGod.debug){log.info("bin im onPlayerItemEvent");}        
+            if(ModGod.debug){ModGod.log.info("bin im onPlayerItemEvent");}        
             if(event.getPlayer().hasPermission("modgod.service"))
             {
-               if(ModGod.debug){log.info("permission erkannt");}    
+               if(ModGod.debug){ModGod.log.info("permission erkannt");}    
                ItemStack newItem;            
                newItem = event.getPlayer().getInventory().getItem(event.getNewSlot());
                if (null != newItem) // is null if empty slot
                {                    
-                  if(ModGod.debug){log.info("ItemID: " + String.valueOf(newItem.getTypeId()));}
+                  if(ModGod.debug){ModGod.log.info("ItemID: " + String.valueOf(newItem.getTypeId()));}
 
                   switch(newItem.getTypeId()) //check config. Change theses cases also in onInventoryClose Event!
                   {
@@ -105,7 +104,7 @@ public class ModGodEntityListener implements Listener
                }
                if(doContinue)
                {
-                  if(ModGod.debug){log.info("ServiceItem " + String.valueOf(newItem) + " erkannt.");}
+                  if(ModGod.debug){ModGod.log.info("ServiceItem " + String.valueOf(newItem) + " erkannt.");}
                   if(false == playersInSM.contains(event.getPlayer().getName()))
                   {
                      event.getPlayer().sendMessage(ChatColor.GREEN + "Service-Modus EIN.");
@@ -114,7 +113,7 @@ public class ModGodEntityListener implements Listener
                }      
                else // Player with permission has no service item in hand, so delete him from the List if he's on it.
                {
-                  if(ModGod.debug){log.info("Kein ServiceItem erkannt");}
+                  if(ModGod.debug){ModGod.log.info("Kein ServiceItem erkannt");}
                   if(playersInSM.contains(event.getPlayer().getName()))
                   {
                      event.getPlayer().sendMessage(ChatColor.GREEN + "Service-Modus AUS.");
@@ -144,7 +143,7 @@ public class ModGodEntityListener implements Listener
             boolean doContinue = false;
             if (heldItem != null) // is null if empty slot
             {
-               if(ModGod.debug){log.info("ItemID: " + String.valueOf(heldItem.getTypeId()));}
+               if(ModGod.debug){ModGod.log.info("ItemID: " + String.valueOf(heldItem.getTypeId()));}
 
                switch( heldItem.getTypeId()) //check config
                {
@@ -187,7 +186,7 @@ public class ModGodEntityListener implements Listener
             } 
             if(doContinue)
             {
-               if(ModGod.debug){log.info("ServiceItem " + String.valueOf(heldItem) + " erkannt.");}
+               if(ModGod.debug){ModGod.log.info("ServiceItem " + String.valueOf(heldItem) + " erkannt.");}
                if(false == playersInSM.contains(event.getPlayer().getName()))
                {                    
                   playersInSM.add(event.getPlayer().getName());
@@ -195,7 +194,7 @@ public class ModGodEntityListener implements Listener
             }      
             else // Player with permission has no service item in hand, so delete him from the List if he's on it.
             {
-               if(ModGod.debug){log.info("Kein ServiceItem erkannt");}
+               if(ModGod.debug){ModGod.log.info("Kein ServiceItem erkannt");}
                if(playersInSM.contains(event.getPlayer().getName()))
                {                    
                   playersInSM.remove(event.getPlayer().getName());                    
@@ -204,7 +203,7 @@ public class ModGodEntityListener implements Listener
          }
          else
          {
-            if(ModGod.debug){log.info("leerer Slot");}
+            if(ModGod.debug){ModGod.log.info("leerer Slot");}
             if(playersInSM.contains(event.getPlayer().getName()))
             {                
                playersInSM.remove(event.getPlayer().getName());                    

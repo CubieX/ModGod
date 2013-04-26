@@ -1,13 +1,12 @@
 package com.github.CubieX.ModGod;
 
-import java.util.ArrayList;
 import java.util.logging.Logger;
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class ModGod extends JavaPlugin
 {
-   Logger log;
-   ArrayList<String> playersInSM = new ArrayList<String>();
+   public static final Logger log = Bukkit.getServer().getLogger();
 
    private ModGod plugin = null;
    private ModGodCommandHandler myComHandler = null;
@@ -21,32 +20,25 @@ public class ModGod extends JavaPlugin
    {
       this.plugin = this;
       configHandler = new ModGodConfigHandler(this);
-      eListener = new ModGodEntityListener(this, configHandler, log);        
-      log = this.getLogger();
-      log.info("ModGod version " + getDescription().getVersion() + " is enabled!");
+      eListener = new ModGodEntityListener(this, configHandler);
+      myComHandler = new ModGodCommandHandler(this, configHandler);
+      getCommand("mg").setExecutor(myComHandler);
 
-      myComHandler = new ModGodCommandHandler(this, configHandler, log);
-      getCommand("mg").setExecutor(myComHandler);       
+      log.info(this.getName() + " version " + getDescription().getVersion() + " is enabled!");
    }
 
    public void readConfigValues()
    {
       if("true".equalsIgnoreCase(this.getConfig().getString("debug")))
       {
-         debug = true;
+         debug = configHandler.getConfig().getBoolean("debug");
       }
-      else
-      {
-         debug = false;
-      }
-
-
    }
 
    @Override
    public void onDisable()
    {
-      log.info("ModGod version " + getDescription().getVersion() + " is disabled!");
+      log.info(this.getDescription().getName() + " version " + getDescription().getVersion() + " is disabled!");
       configHandler = null;
    }    
 }

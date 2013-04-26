@@ -30,6 +30,11 @@ public class ModGodConfigHandler
       // get and set values here!
       plugin.saveConfig();   
    }
+   
+   public FileConfiguration getConfig()
+   {
+      return config;
+   }
 
    //reloads the config from disc (used if user made manual changes to the config.yml file)
    public void reloadConfig(CommandSender sender)

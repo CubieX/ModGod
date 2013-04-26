@@ -1,25 +1,20 @@
 package com.github.CubieX.ModGod;
 
-import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 
 public class ModGodCommandHandler implements CommandExecutor
 {
    private ModGod plugin = null;
    private ModGodConfigHandler configHandler = null;
-   private Logger log = null;
 
-   public ModGodCommandHandler(ModGod plugin, ModGodConfigHandler configHandler, Logger log) 
+   public ModGodCommandHandler(ModGod plugin, ModGodConfigHandler configHandler) 
    {
       this.plugin = plugin;
       this.configHandler = configHandler;
-      this.log = log;
    }
 
    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
@@ -30,9 +25,9 @@ public class ModGodCommandHandler implements CommandExecutor
          player = (Player) sender;
       }
 
-      if(ModGod.debug){log.info("onCommand");}
+      if(ModGod.debug){ModGod.log.info("onCommand");}
       if (cmd.getName().equalsIgnoreCase("mg"))
-      { // If the player typed /mf then do the following... (can be run from console also)
+      { // If the player typed /mg then do the following... (can be run from console also)
          if (args.length == 0)
          { //no arguments, so help will be displayed
             return false;
@@ -48,19 +43,18 @@ public class ModGodCommandHandler implements CommandExecutor
             {            
                if(sender.hasPermission("modgod.reload"))
                {                        
-                  configHandler.reloadConfig(sender);
-                  sender.sendMessage("[" + ChatColor.BLUE + "Info" + ChatColor.WHITE + "] " + ChatColor.YELLOW + "ModGod " + plugin.getDescription().getVersion() + " reloaded!");
+                  configHandler.reloadConfig(sender);                  
                   return true;
                }
                else
                {
-                  sender.sendMessage(ChatColor.RED + "You du not have sufficient permission to reload ModGod!");
+                  sender.sendMessage(ChatColor.RED + "You do not have sufficient permission to reload " + plugin.getDescription().getName() + "!");
                }
             }
          }
          else
          {
-            sender.sendMessage(ChatColor.YELLOW + "Ung�ltige Anzahl Argumente.");
+            sender.sendMessage(ChatColor.YELLOW + "Ungueltige Anzahl Argumente.");
          }                
 
       }         
