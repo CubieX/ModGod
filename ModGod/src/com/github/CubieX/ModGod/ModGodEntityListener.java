@@ -1,8 +1,7 @@
 package com.github.CubieX.ModGod;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.logging.Logger;
-
 import org.bukkit.ChatColor;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
@@ -18,12 +17,12 @@ import org.bukkit.inventory.ItemStack;
 public class ModGodEntityListener implements Listener
 {
    Logger eLog;
-   ArrayList<String> playersInSM = new ArrayList<String>();
+   HashSet<String> playersInSM = new HashSet<String>();
    private ModGod plugin = null;
    private ModGodConfigHandler configHandler = null;
 
    public ModGodEntityListener(ModGod plugin, ModGodConfigHandler configHandler)
-   {        
+   {
       this.plugin = plugin;
       this.configHandler = configHandler;
 

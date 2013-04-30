@@ -1,5 +1,8 @@
 Changelog for ModGod by CubieX
 ------------------------------
+V.0.4.3
+- changed ArrayList in EntityHandler to HashSet as there are no iterations. (improves search speed)
+
 V.0.4.2
 - code cleanup
 - made checks more robust and independent from nether and end world names
