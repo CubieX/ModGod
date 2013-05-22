@@ -12,3 +12,6 @@ STILL_LAVA: true
 FIRE: true
 ICE_BLOCK: true
 BEDROCK: true
+# Warm-up time until service mode is activated when holding a service item
+# Optional. (0 - 10 seconds)
+warmUpTime: 5

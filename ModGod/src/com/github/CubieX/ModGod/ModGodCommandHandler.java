@@ -17,6 +17,7 @@ public class ModGodCommandHandler implements CommandExecutor
       this.configHandler = configHandler;
    }
 
+   @Override
    public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args)
    {
       Player player = null;
@@ -27,19 +28,19 @@ public class ModGodCommandHandler implements CommandExecutor
 
       if(ModGod.debug){ModGod.log.info("onCommand");}
       if (cmd.getName().equalsIgnoreCase("mg"))
-      { // If the player typed /mg then do the following... (can be run from console also)
+      {
          if (args.length == 0)
          { //no arguments, so help will be displayed
             return false;
          }
          if (args.length==1)
          {
-            if (args[0].equalsIgnoreCase("version")) // argument 0 is given and correct
+            if (args[0].equalsIgnoreCase("version"))
             {            
                sender.sendMessage(ChatColor.YELLOW + "This server is running ModGod version " + plugin.getDescription().getVersion());
                return true;
             }    
-            if (args[0].equalsIgnoreCase("reload")) // argument 0 is given and correct
+            if (args[0].equalsIgnoreCase("reload"))
             {            
                if(sender.hasPermission("modgod.reload"))
                {                        

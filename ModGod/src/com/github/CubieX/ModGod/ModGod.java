@@ -2,7 +2,9 @@ package com.github.CubieX.ModGod;
 
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 
 public class ModGod extends JavaPlugin
 {
@@ -12,35 +14,70 @@ public class ModGod extends JavaPlugin
    private ModGodCommandHandler myComHandler = null;
    private ModGodConfigHandler configHandler = null;
    private ModGodEntityListener eListener = null;
+   private ModGodSchedulerHandler schedHandler = null;
 
    static boolean debug = false;
+   static int warmUpTime = 5;
 
    @Override
    public void onEnable()
    {
       this.plugin = this;
       configHandler = new ModGodConfigHandler(this);
-      eListener = new ModGodEntityListener(this, configHandler);
+      eListener = new ModGodEntityListener(this);
       myComHandler = new ModGodCommandHandler(this, configHandler);
       getCommand("mg").setExecutor(myComHandler);
+      
+      readConfigValues();
+      
+      schedHandler = new ModGodSchedulerHandler(plugin);
 
       log.info(this.getName() + " version " + getDescription().getVersion() + " is enabled!");
    }
 
    public void readConfigValues()
    {
-      if("true".equalsIgnoreCase(this.getConfig().getString("debug")))
+      boolean exceed = false;
+      boolean invalid = false;
+      
+      debug = configHandler.getConfig().getBoolean("debug");            
+      warmUpTime = configHandler.getConfig().getInt("warmUpTime");
+      
+      if(warmUpTime < 0){warmUpTime = 0; exceed = true;}
+      if(warmUpTime > 10){warmUpTime = 10; exceed = true;}
+     
+      if(exceed)
       {
-         debug = configHandler.getConfig().getBoolean("debug");
+         log.warning("One or more config values are exceeding their allowed range. Please check your config file!");
+      }
+
+      if(invalid)
+      {
+         log.warning("One or more config values are invalid. Please check your config file!");
       }
    }
 
    @Override
    public void onDisable()
    {
-      log.info(this.getDescription().getName() + " version " + getDescription().getVersion() + " is disabled!");
+      Bukkit.getServer().getScheduler().cancelAllTasks();
+      schedHandler = null;
+      myComHandler = null;
+      eListener = null;
       configHandler = null;
-   }    
+      log.info(this.getDescription().getName() + " version " + getDescription().getVersion() + " is disabled!");
+      
+   }
+
+   public BukkitTask startWarmUpTimer_DelayedTask(Player player)
+   {
+      return (schedHandler.startWarmUpTimer_Delayed(player));
+   }
+   
+   public void activateServiceMode(Player player)
+   {
+      eListener.activateServiceMode(player);
+   }
 }
 
 

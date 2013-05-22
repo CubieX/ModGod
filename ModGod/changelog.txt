@@ -1,5 +1,11 @@
 Changelog for ModGod by CubieX
 ------------------------------
+V.0.5.0
+- build against CB 1.5.2-R0.1 Beta
+- added Warm-Up function for service mode with configurable delay
+- config udpdated with new values
+- code cleanup
+
 V.0.4.3
 - changed ArrayList in EntityHandler to HashSet as there are no iterations. (improves search speed)
 

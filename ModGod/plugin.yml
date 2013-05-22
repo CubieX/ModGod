@@ -1,6 +1,6 @@
 name: ModGod
 main: com.github.CubieX.ModGod.ModGod
-version: 0.4.3
+version: 0.5.0
 description: Gives Moderators god mode while holding hazardous items in hand. (e.g.Lava) 
 
 commands:
