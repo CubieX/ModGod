@@ -4,14 +4,20 @@ config_version: 1
 language: de
 # enable debug output
 debug: false
-# List of items that trigger ModGod (not extendable!)
-FLOWING_WATER: true
-STILL_WATER: true
-FLOWING_LAVA: true
-STILL_LAVA: true
-FIRE: true
-ICE_BLOCK: true
-BEDROCK: true
+# List of items that trigger ModGod
+serviceItems:
+  - WATER
+  - STATIONARY_WATER
+  - LAVA
+  - STATIONARY_LAVA
+  - FIRE
+  - ICE
+  - BEDROCK
+  - WOOD_AXE
 # Warm-up time until service mode is activated when holding a service item
 # Optional. (0 - 10 seconds)
 warmUpTime: 5
+# grace period (time after switching to non-service item
+# until service mode is deactivated)
+# Optional. (0-10.0 seconds. 1/10th resolution)
+gracePeriod: 1.5

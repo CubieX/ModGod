@@ -21,6 +21,7 @@ public class ModGodEntityListener implements Listener
    Logger eLog;
    HashSet<String> playersInSM = new HashSet<String>();
    HashMap<String, BukkitTask> playersOnWarmup = new HashMap<String, BukkitTask>();
+   HashMap<String, BukkitTask> playersInGracePeriod = new HashMap<String, BukkitTask>();
    private ModGod plugin = null;
 
    public ModGodEntityListener(ModGod plugin)
@@ -37,7 +38,7 @@ public class ModGodEntityListener implements Listener
       try
       {
          if(!event.getPlayer().isOp()) //if player is op, he does not need service mode. He can use godmode from game.
-         {                       
+         {
             if(event.getPlayer().getWorld().getEnvironment().equals(Environment.NETHER))
             {
                if(!hasNetherPerms(event.getPlayer()))
@@ -47,7 +48,7 @@ public class ModGodEntityListener implements Listener
             }
 
             if(event.getPlayer().getWorld().getEnvironment().equals(Environment.THE_END))
-            {               
+            {
                return; // player is in the end. ModGod does not work here. So leave handler.                
             }
 
@@ -61,88 +62,77 @@ public class ModGodEntityListener implements Listener
                newItem = event.getPlayer().getInventory().getItem(event.getNewSlot());
 
                if (null != newItem) // is null if empty slot
-               {                    
-                  if(ModGod.debug){ModGod.log.info("ItemID: " + String.valueOf(newItem.getTypeId()));}
+               {
+                  if(ModGod.debug){ModGod.log.info("Item: " + String.valueOf(newItem.getType()));}
 
-                  switch(newItem.getTypeId()) //check config. Change theses cases also in onInventoryClose Event!
+                  if(plugin.getConfig().getStringList("serviceItems").contains(newItem.getType().toString()))
                   {
-                  case 8:
-                     if(plugin.getConfig().getBoolean("FLOWING_WATER")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 9:
-                     if(plugin.getConfig().getBoolean("STILL_WATER")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 10:
-                     if(plugin.getConfig().getBoolean("FLOWING_LAVA")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 11:
-                     if(plugin.getConfig().getBoolean("STILL_LAVA")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 51:
-                     if(plugin.getConfig().getBoolean("FIRE")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 79:
-                     if(plugin.getConfig().getBoolean("ICE_BLOCK")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 7:
-                     if(plugin.getConfig().getBoolean("BEDROCK")){
-                        doContinue = true;
-                     }
-                     break;
+                     doContinue = true;
                   }
+               }
+               else
+               {
+                  return; // if player switched to empty hand, do nothing. (leave him in service mode if he is in it) 
+                  // this prevents accidental leaving of service mode when switching to another slot with a service item
+                  // while hitting an empty slot
                }
 
                if(doContinue)
                {
                   if(ModGod.debug){ModGod.log.info("ServiceItem " + String.valueOf(newItem) + " erkannt.");}
-                  if((!playersOnWarmup.containsKey(event.getPlayer().getName())) && (!playersInSM.contains(event.getPlayer().getName())))
+
+                  if(ModGod.warmUpTime > 0) // only use timer and playersOnWarmup HashMap if value is > 0 in config
                   {
-                     event.getPlayer().sendMessage(ChatColor.YELLOW + "Service-Modus in " + ModGod.warmUpTime + " s...");
-                     playersOnWarmup.put(event.getPlayer().getName(), plugin.startWarmUpTimer_DelayedTask(event.getPlayer()));                     
+                     if((!playersOnWarmup.containsKey(event.getPlayer().getName())) && (!playersInSM.contains(event.getPlayer().getName())))
+                     {
+                        event.getPlayer().sendMessage(ChatColor.YELLOW + "Service-Modus in " + ModGod.warmUpTime + " s...");
+                        playersOnWarmup.put(event.getPlayer().getName(), plugin.startWarmUpTimer_DelayedTask(event.getPlayer()));                     
+                     }
+                  }
+                  else
+                  {
+                     playersInSM.add(event.getPlayer().getName());
+                  }
+
+                  // cancel graceTimer if player in service mode switched back from a non-service tool to a valid service tool
+                  // before gracePeriod has expired
+                  if(playersInSM.contains(event.getPlayer().getName()) && playersInGracePeriod.containsKey(event.getPlayer().getName()))
+                  {
+                     if (null != playersInGracePeriod.get(event.getPlayer().getName())) // graceTimer is still running
+                     {
+                        playersInGracePeriod.get(event.getPlayer().getName()).cancel();
+                     }
+                     playersInGracePeriod.remove(event.getPlayer().getName());
                   }
                }
-               else // Player with permission has no service item in hand, so delete him from the List if he's on it.
+               else // Player with permission has no service item in hand, so start grace Timer if he is currently in service mode
                {
                   if(ModGod.debug){ModGod.log.info("Kein ServiceItem erkannt");}
-                  if(playersInSM.contains(event.getPlayer().getName()))
-                  {
-                     event.getPlayer().sendMessage(ChatColor.RED + "Service-Modus AUS.");
-                     playersInSM.remove(event.getPlayer().getName());                    
-                  }
 
-                  if(playersOnWarmup.containsKey(event.getPlayer().getName()))
+                  if(ModGod.gracePeriod > 0) // only use timer and playersInGracePeriod HashMap if value is > 0 in config
                   {
-                     event.getPlayer().sendMessage(ChatColor.RED + "Abgebrochen.");
-
-                     // check if warm-up is still running for this player
-                     if(null != playersOnWarmup.get(event.getPlayer().getName()))
+                     if((playersInSM.contains(event.getPlayer().getName())) && (!playersInGracePeriod.containsKey(event.getPlayer().getName())))
                      {
-                        // cancel players warm-up task (which is still running) to prevent task stacking
-                        playersOnWarmup.get(event.getPlayer().getName()).cancel();
+                        playersInGracePeriod.put(event.getPlayer().getName(), plugin.startGracePeriodTimer_DelayedTask(event.getPlayer()));                     
                      }
-
-                     playersOnWarmup.remove(event.getPlayer().getName());                    
                   }
-               }           
+                  else
+                  {
+                     if(playersInSM.contains(event.getPlayer().getName()))
+                     {
+                        playersInSM.remove(event.getPlayer());
+                     }
+                  }
+
+                  abortWarmUp(event.getPlayer());
+               }
 
             }
          }
       }
       catch(Exception ex)
-      {
-         // player is probably no longer online
+      {         
+         ex.printStackTrace();
       }
    }  
 
@@ -159,93 +149,57 @@ public class ModGodEntityListener implements Listener
             if(!event.getPlayer().isOp()) //if player is op, he does not need service mode. He can use godmode from game.
             {
                ItemStack heldItem;
-               heldItem = event.getPlayer().getItemInHand();
+               heldItem = player.getItemInHand();
                boolean doContinue = false;
 
                if (null != heldItem) // is null if empty slot
                {
-                  if(ModGod.debug){ModGod.log.info("ItemID: " + String.valueOf(heldItem.getTypeId()));}
+                  if(ModGod.debug){ModGod.log.info("Item: " + String.valueOf(heldItem.getType()));}
 
-                  switch( heldItem.getTypeId()) //check config
+                  if(plugin.getConfig().getStringList("serviceItems").contains(heldItem.getType().toString()))
                   {
-                  case 8:
-                     if(plugin.getConfig().getBoolean("FLOWING_WATER")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 9:
-                     if(plugin.getConfig().getBoolean("STILL_WATER")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 10:
-                     if(plugin.getConfig().getBoolean("FLOWING_LAVA")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 11:
-                     if(plugin.getConfig().getBoolean("STILL_LAVA")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 51:
-                     if(plugin.getConfig().getBoolean("FIRE")){
-                        doContinue = true;
-                     }
-                     break;
-                  case 79:
-                     if(plugin.getConfig().getBoolean("ICE_BLOCK")){
-                        doContinue = true;                        
-                     }
-                     break;
-                  case 7:
-                     if(plugin.getConfig().getBoolean("BEDROCK")){
-                        doContinue = true;
-                     }
-                     break;
-                  }
-               }            
-
-               if(doContinue)
-               {
-                  if(ModGod.debug){ModGod.log.info("ServiceItem " + String.valueOf(heldItem) + " erkannt.");}
-                  if((!playersOnWarmup.containsKey(event.getPlayer().getName())) && (!playersInSM.contains(event.getPlayer().getName())))
-                  {
-                     player.sendMessage(ChatColor.YELLOW + "Service-Modus in " + ModGod.warmUpTime + " s...");
-                     playersOnWarmup.put(event.getPlayer().getName(), plugin.startWarmUpTimer_DelayedTask(player));                     
-                  }
-               }      
-               else // Player with permission has no service item in hand, so delete him from the List if he's on it.
-               {
-                  if(ModGod.debug){ModGod.log.info("Kein ServiceItem erkannt");}
-
-                  if(playersInSM.contains(event.getPlayer().getName()))
-                  {
-                     player.sendMessage(ChatColor.RED + "Service-Modus AUS.");
-                     playersInSM.remove(event.getPlayer().getName());                    
+                     doContinue = true;
                   }
 
-                  if(playersOnWarmup.containsKey(event.getPlayer().getName()))
+                  if(doContinue)
                   {
-                     player.sendMessage(ChatColor.RED + "Abgebrochen.");
-
-                     // check if warm-up is still running for this player
-                     if(null != playersOnWarmup.get(event.getPlayer().getName()))
+                     if(ModGod.debug){ModGod.log.info("ServiceItem " + String.valueOf(heldItem) + " erkannt.");}
+                     if((!playersOnWarmup.containsKey(player.getName())) && (!playersInSM.contains(player.getName())))
                      {
-                        // cancel players warm-up task (which is still running) to prevent task stacking
-                        playersOnWarmup.get(event.getPlayer().getName()).cancel();
+                        player.sendMessage(ChatColor.YELLOW + "Service-Modus in " + ModGod.warmUpTime + " s...");
+                        playersOnWarmup.put(player.getName(), plugin.startWarmUpTimer_DelayedTask(player));                     
                      }
 
-                     playersOnWarmup.remove(event.getPlayer().getName());
+                     // cancel graceTimer if player in service mode switched back from a non-service tool to a valid service tool
+                     // before gracePeriod has expired
+                     if(playersInSM.contains(player.getName()) && playersInGracePeriod.containsKey(player.getName()))
+                     {
+                        if (null != playersInGracePeriod.get(player.getName())) // graceTimer is still running
+                        {
+                           playersInGracePeriod.get(player.getName()).cancel();
+                        }
+                        playersInGracePeriod.remove(player.getName());
+                     }
+                  }
+                  else // Player with permission has no service item in hand, so start grace Timer if he is currently in service mode
+                  {
+                     if(ModGod.debug){ModGod.log.info("Kein ServiceItem erkannt");}
+
+                     if((playersInSM.contains(player.getName())) && (!playersInGracePeriod.containsKey(player.getName())))
+                     {
+                        playersInGracePeriod.put(player.getName(), plugin.startGracePeriodTimer_DelayedTask(player));                     
+                     }
+
+                     abortWarmUp(player);
                   }
                }
-            }
-         }        
+            }        
+         }
       }
       catch(Exception ex)
-      {
-         // player is probably no longer online
-      }        
+      {         
+         ex.printStackTrace();
+      }
    }
 
    //----------------------------------------------------------------------------------------------------
@@ -262,19 +216,19 @@ public class ModGodEntityListener implements Listener
             {
                //if(event.getCause() == event.) // optional: look what caused the damage. (to not have a complete god mode)
                event.setCancelled(true); // if yes, dont apply damage (e.g. from falling into lava or creeper explosion)
-            }    
+            }
          }
       }
       catch(Exception ex)
       {
-         // player is probably no longer online
+         ex.printStackTrace();
       }        
    }
 
    //----------------------------------------------------------------------------------------------------
    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
    public void onPlayerChangedWorldEvent (PlayerChangedWorldEvent event)
-   {      
+   {
       try
       {
          if(event.getPlayer().getLocation().getWorld().getName().toLowerCase().contains("nether"))
@@ -298,8 +252,21 @@ public class ModGodEntityListener implements Listener
                      playersOnWarmup.get(event.getPlayer().getName()).cancel();
                   }
 
-                  playersOnWarmup.remove(event.getPlayer().getName());                    
+                  playersOnWarmup.remove(event.getPlayer().getName());
                }
+
+               if(playersInGracePeriod.containsKey(event.getPlayer().getName()))
+               {
+                  // check if graceTimer is still running for this player
+                  if(null != playersInGracePeriod.get(event.getPlayer().getName()))
+                  {
+                     // cancel players graceTimer task (which is still running) to prevent task stacking
+                     playersInGracePeriod.get(event.getPlayer().getName()).cancel();
+                  }
+
+                  playersInGracePeriod.remove(event.getPlayer().getName());    
+               }
+
                return; // player is in the nether but has no permission to use ModGod in the nether. So leave handler.
             }
          }
@@ -308,13 +275,13 @@ public class ModGodEntityListener implements Listener
          {
             if(playersInSM.contains(event.getPlayer().getName()))
             {
-               event.getPlayer().sendMessage(ChatColor.RED + "Der Service-Modus ist im End nicht erlaubt!");
+               event.getPlayer().sendMessage(ChatColor.RED + "Du hast keine Berechtigung fuer den Service-Modus im Nether!");
                playersInSM.remove(event.getPlayer().getName());                    
             }
 
             if(playersOnWarmup.containsKey(event.getPlayer().getName()))
             {
-               event.getPlayer().sendMessage(ChatColor.RED + "Der Service-Modus ist im End nicht erlaubt!");
+               event.getPlayer().sendMessage(ChatColor.RED + "Du hast keine Berechtigung fuer den Service-Modus im Nether!");
 
                // check if warm-up is still running for this player
                if(null != playersOnWarmup.get(event.getPlayer().getName()))
@@ -324,16 +291,30 @@ public class ModGodEntityListener implements Listener
                }
 
                playersOnWarmup.remove(event.getPlayer().getName());
-
             }
+
+            if(playersInGracePeriod.containsKey(event.getPlayer().getName()))
+            {
+               // check if graceTimer is still running for this player
+               if(null != playersInGracePeriod.get(event.getPlayer().getName()))
+               {
+                  // cancel players graceTimer task (which is still running) to prevent task stacking
+                  playersInGracePeriod.get(event.getPlayer().getName()).cancel();
+               }
+
+               playersInGracePeriod.remove(event.getPlayer().getName());    
+            }
+            
             return; // player is in the end. ModGod does not work here. So leave handler.                
          }
       }
       catch(Exception ex)
       {
-         // player is probably no longer online
+         ex.printStackTrace();
       }        
    }
+
+   // ##########################################################################################
 
    private boolean hasNetherPerms(Player playerToCheck)
    {
@@ -357,12 +338,88 @@ public class ModGodEntityListener implements Listener
    // this is called by the warm-up scheduler for a player after warm-up delay has exceeded
    public void activateServiceMode(Player player)
    {
-      if(playersOnWarmup.containsKey(player.getName()))
+      if(null != player)
       {
-         // set player in service mode only, if he has held the items for the full warm-up duration
-         playersOnWarmup.remove(player.getName());
-         playersInSM.add(player.getName());         
-         player.sendMessage(ChatColor.GREEN + "Service-Modus AKTIV");
+         if(playersOnWarmup.containsKey(player.getName()))
+         {
+            // set player in service mode only, if he has held the items for the full warm-up duration
+            playersOnWarmup.remove(player.getName());            
+
+            enableServiceMode(player);
+         }
+      }
+   }
+
+   // this is called by the gracePeriod scheduler for a player after switching to non-service item
+   public void disableServiceModeWithGrace(Player player)
+   {
+      if(null != player)
+      {
+         if(playersInGracePeriod.containsKey(player.getName()))
+         {
+            playersInGracePeriod.remove(player.getName());
+         }
+
+         // if player has no service item in hand after grace period has expired, delete him from the list of service mode users
+         if(!plugin.getConfig().getStringList("serviceItems").contains(player.getItemInHand().getType()))
+         {
+            disableServiceMode(player);
+         }
+      }
+   }
+
+   public void abortWarmUp(Player player)
+   {
+      if(null != player)
+      {
+         if(playersOnWarmup.containsKey(player.getName()))
+         {
+            // check if warm-up is still running for this player
+            if(null != playersOnWarmup.get(player.getName()))
+            {
+               // cancel players warm-up task (which is still running) to prevent task stacking
+               playersOnWarmup.get(player.getName()).cancel();
+            }
+
+            playersOnWarmup.remove(player.getName());
+
+            if(player.isOnline())
+            {
+               player.sendMessage(ChatColor.RED + "Abgebrochen");
+            }
+         }
+      }
+   }
+
+   public void enableServiceMode(Player player)
+   {
+      if(null != player)
+      {
+         if(!playersInSM.contains(player.getName()))
+         {
+            playersInSM.add(player.getName());
+
+            if(player.isOnline())
+            {
+               player.sendMessage(ChatColor.GREEN + "Service-Modus AKTIV");
+            }
+         }
+      }
+   }
+
+   public void disableServiceMode(Player player)
+   {
+      if(null != player)
+      {
+         if(playersInSM.contains(player.getName()))
+         {
+            playersInSM.remove(player.getName());
+
+            if(player.isOnline())
+            {
+               player.sendMessage(ChatColor.RED + "Service-Modus AUS");
+            }
+         }
       }
    }
 }

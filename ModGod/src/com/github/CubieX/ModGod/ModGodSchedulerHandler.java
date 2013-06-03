@@ -21,7 +21,20 @@ public class ModGodSchedulerHandler
             plugin.activateServiceMode(p);
          }
       }, 20L * ModGod.warmUpTime); // delay defined in config
-      
+
+      return (task);
+   }
+
+   public BukkitTask startGracePeriodTimer_Delayed(final Player p)
+   {
+      BukkitTask task = plugin.getServer().getScheduler().runTaskLater(plugin, new Runnable()
+      {
+         public void run()
+         {
+            plugin.disableServiceModeWithGrace(p);
+         }
+      }, (long) (Math.round(20 * ModGod.gracePeriod))); // delay defined in config
+
       return (task);
    }
 }
