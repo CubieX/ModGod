@@ -1,5 +1,9 @@
 Changelog for ModGod by CubieX
 ------------------------------
+
+V0.6.1
+- fixed permission for reload command
+
 V0.6.0
 - changed config to be user extendable for service items
 - added grace period when switching from service item to non-service item until service mode gets deactivated

@@ -42,7 +42,7 @@ public class ModGodCommandHandler implements CommandExecutor
             }    
             if (args[0].equalsIgnoreCase("reload"))
             {            
-               if(sender.hasPermission("modgod.reload"))
+               if(sender.hasPermission("modgod.admin"))
                {                        
                   configHandler.reloadConfig(sender);                  
                   return true;
