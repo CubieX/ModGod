@@ -1,6 +1,10 @@
 Changelog for ModGod by CubieX
 ------------------------------
 
+V0.6.2
+- fixed problem with service item detection logic which enabled players
+  to use non-service items while still in service mode
+
 V0.6.1
 - fixed permission for reload command
 

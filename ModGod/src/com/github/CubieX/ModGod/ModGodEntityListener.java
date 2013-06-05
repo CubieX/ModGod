@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -13,6 +14,8 @@ import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
+import org.bukkit.event.player.PlayerPickupItemEvent;
+import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -35,6 +38,8 @@ public class ModGodEntityListener implements Listener
    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
    public void onPlayerItemHeld(PlayerItemHeldEvent event)
    {
+      if(ModGod.debug){event.getPlayer().sendMessage("Item-Slot: " + event.getNewSlot() + " | Item: " + event.getPlayer().getInventory().getItem(event.getNewSlot()));}
+
       try
       {
          if(!event.getPlayer().isOp()) //if player is op, he does not need service mode. He can use godmode from game.
@@ -156,6 +161,14 @@ public class ModGodEntityListener implements Listener
                {
                   if(ModGod.debug){ModGod.log.info("Item: " + String.valueOf(heldItem.getType()));}
 
+                  if(heldItem.getType() == Material.AIR)
+                  {
+                     return;
+                     // if player dropped his currently held service item (means: he has now empty hand), do nothing. (leave him in service mode if he is in it) 
+                     // this prevents accidental leaving of service mode when accidently dropping a service item currently held.
+                     // Notice: unlike the "PlayerItemheldEvent", ampty hand will men, the selected slot contains "AIR". It will not be "null"!
+                  }
+
                   if(plugin.getConfig().getStringList("serviceItems").contains(heldItem.getType().toString()))
                   {
                      doContinue = true;
@@ -192,7 +205,7 @@ public class ModGodEntityListener implements Listener
 
                      abortWarmUp(player);
                   }
-               }
+               }               
             }        
          }
       }
@@ -304,7 +317,7 @@ public class ModGodEntityListener implements Listener
 
                playersInGracePeriod.remove(event.getPlayer().getName());    
             }
-            
+
             return; // player is in the end. ModGod does not work here. So leave handler.                
          }
       }
@@ -312,6 +325,39 @@ public class ModGodEntityListener implements Listener
       {
          ex.printStackTrace();
       }        
+   }
+
+   //----------------------------------------------------------------------------------------------------    
+   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+   public void onPlayerItemPickup(PlayerPickupItemEvent event)
+   {
+      // TODO disable Service mode if picked up item is a non-service item
+      // player may be in service mode and have a free hand slot selected and pick up a non-service-mode item!
+
+      // get slot of picked up itemStack??? http://forums.bukkit.org/threads/get-inventory-slot-on-item-pickup.138543/
+      // this may fire before the item is actually in the players inventory??
+      // try .updateInventory() perharps..
+      // guess which free slot will be used to hold the new itemstack, if Quickslot.... (
+      // mimic:
+      // Freier Quickslot (von links wird aufgefüllt) nimmt neues Item auf, wenn das Item nicht in anderem Quickslot oder Invenroty-Slot vorhanden ist,
+      //                                        oder es vorhanden ist, aber sich in keinen vorhandenen Stack weiter reinstacken lässt
+      //                                        weil alle Stacks 64er-Stacks sind oder nicht-stackbare Items. 
+
+      // start players graceTimer (if delay set) to disable service mode, if he has a non-service item in hand after grace period (maybe he just picked it up)
+      if(ModGod.gracePeriod > 0) // only use timer and playersInGracePeriod HashMap if value is > 0 in config
+      {
+         if((playersInSM.contains(event.getPlayer().getName())) && (!playersInGracePeriod.containsKey(event.getPlayer().getName())))
+         {
+            playersInGracePeriod.put(event.getPlayer().getName(), plugin.startGracePeriodTimer_DelayedTask(event.getPlayer()));                     
+         }
+      }
+      else
+      {
+         if(playersInSM.contains(event.getPlayer().getName()))
+         {
+            playersInSM.remove(event.getPlayer());
+         }
+      }
    }
 
    // ##########################################################################################
@@ -360,8 +406,10 @@ public class ModGodEntityListener implements Listener
             playersInGracePeriod.remove(player.getName());
          }
 
-         // if player has no service item in hand after grace period has expired, delete him from the list of service mode users
-         if(!plugin.getConfig().getStringList("serviceItems").contains(player.getItemInHand().getType()))
+         // if player has no service item in hand and no free hands (= he has a non-service item in hand) after grace period has expired,
+         // delete him from the list of service mode users
+         if(!plugin.getConfig().getStringList("serviceItems").contains(player.getItemInHand().getType().toString()) &&
+               player.getItemInHand().getType() != Material.AIR)
          {
             disableServiceMode(player);
          }
