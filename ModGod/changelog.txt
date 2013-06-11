@@ -1,7 +1,11 @@
 Changelog for ModGod by CubieX
 ------------------------------
 
-V0.6.2
+V.0.6.3
+- Free hand will no longer keep the service mode up indefinitely.
+  Same grace period like all non-service items will apply now.
+
+V.0.6.2
 - fixed problem with service item detection logic which enabled players
   to use non-service items while still in service mode
 

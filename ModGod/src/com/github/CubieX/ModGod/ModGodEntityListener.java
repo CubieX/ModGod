@@ -75,12 +75,7 @@ public class ModGodEntityListener implements Listener
                      doContinue = true;
                   }
                }
-               else
-               {
-                  return; // if player switched to empty hand, do nothing. (leave him in service mode if he is in it) 
-                  // this prevents accidental leaving of service mode when switching to another slot with a service item
-                  // while hitting an empty slot
-               }
+               // empty hand will also be treated as non-service-item
 
                if(doContinue)
                {
@@ -157,17 +152,9 @@ public class ModGodEntityListener implements Listener
                heldItem = player.getItemInHand();
                boolean doContinue = false;
 
-               if (null != heldItem) // is null if empty slot
+               if (null != heldItem) // is probably never null in this event (will be AIR) But to be sure...
                {
-                  if(ModGod.debug){ModGod.log.info("Item: " + String.valueOf(heldItem.getType()));}
-
-                  if(heldItem.getType() == Material.AIR)
-                  {
-                     return;
-                     // if player dropped his currently held service item (means: he has now empty hand), do nothing. (leave him in service mode if he is in it) 
-                     // this prevents accidental leaving of service mode when accidently dropping a service item currently held.
-                     // Notice: unlike the "PlayerItemheldEvent", ampty hand will men, the selected slot contains "AIR". It will not be "null"!
-                  }
+                  if(ModGod.debug){ModGod.log.info("Item: " + String.valueOf(heldItem.getType()));}                  
 
                   if(plugin.getConfig().getStringList("serviceItems").contains(heldItem.getType().toString()))
                   {
@@ -331,17 +318,8 @@ public class ModGodEntityListener implements Listener
    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
    public void onPlayerItemPickup(PlayerPickupItemEvent event)
    {
-      // TODO disable Service mode if picked up item is a non-service item
-      // player may be in service mode and have a free hand slot selected and pick up a non-service-mode item!
-
-      // get slot of picked up itemStack??? http://forums.bukkit.org/threads/get-inventory-slot-on-item-pickup.138543/
-      // this may fire before the item is actually in the players inventory??
-      // try .updateInventory() perharps..
-      // guess which free slot will be used to hold the new itemstack, if Quickslot.... (
-      // mimic:
-      // Freier Quickslot (von links wird aufgefüllt) nimmt neues Item auf, wenn das Item nicht in anderem Quickslot oder Invenroty-Slot vorhanden ist,
-      //                                        oder es vorhanden ist, aber sich in keinen vorhandenen Stack weiter reinstacken lässt
-      //                                        weil alle Stacks 64er-Stacks sind oder nicht-stackbare Items. 
+      // disable Service mode if picked up item is a non-service item
+      // player may be in service mode and have a free hand slot selected and pick up a non-service-mode item!     
 
       // start players graceTimer (if delay set) to disable service mode, if he has a non-service item in hand after grace period (maybe he just picked it up)
       if(ModGod.gracePeriod > 0) // only use timer and playersInGracePeriod HashMap if value is > 0 in config
@@ -406,10 +384,9 @@ public class ModGodEntityListener implements Listener
             playersInGracePeriod.remove(player.getName());
          }
 
-         // if player has no service item in hand and no free hands (= he has a non-service item in hand) after grace period has expired,
+         // if player has no service item in hand after grace period has expired,
          // delete him from the list of service mode users
-         if(!plugin.getConfig().getStringList("serviceItems").contains(player.getItemInHand().getType().toString()) &&
-               player.getItemInHand().getType() != Material.AIR)
+         if(!plugin.getConfig().getStringList("serviceItems").contains(player.getItemInHand().getType().toString()))
          {
             disableServiceMode(player);
          }
