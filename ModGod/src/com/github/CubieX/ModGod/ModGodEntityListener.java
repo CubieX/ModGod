@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Logger;
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.World.Environment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.Listener;
@@ -15,7 +14,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
 import org.bukkit.event.player.PlayerItemHeldEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
-import org.bukkit.inventory.Inventory;
+import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -335,6 +334,26 @@ public class ModGodEntityListener implements Listener
          {
             playersInSM.remove(event.getPlayer());
          }
+      }
+   }
+   
+   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+   public void onPlayerItemHeld(PlayerQuitEvent event)
+   {    
+      // cleanup
+      if(playersInSM.contains(event.getPlayer().getName()))
+      {
+         playersInSM.remove(event.getPlayer().getName());
+      }
+      
+      if(playersInGracePeriod.containsKey(event.getPlayer().getName()))
+      {
+         playersInGracePeriod.remove(event.getPlayer().getName());
+      }
+      
+      if(playersOnWarmup.containsKey(event.getPlayer().getName()))
+      {
+         playersOnWarmup.remove(event.getPlayer().getName());
       }
    }
 
