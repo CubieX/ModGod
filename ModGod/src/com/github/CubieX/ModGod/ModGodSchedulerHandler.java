@@ -1,6 +1,7 @@
 package com.github.CubieX.ModGod;
 
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitTask;
 
 public class ModGodSchedulerHandler
@@ -34,6 +35,19 @@ public class ModGodSchedulerHandler
             plugin.disableServiceModeWithGrace(p);
          }
       }, (long) (Math.round(20 * ModGod.gracePeriod))); // delay defined in config
+
+      return (task);
+   }
+
+   public BukkitTask startDelayedServiceModeCheckTimer_Task(final Player p)
+   {
+      BukkitTask task = plugin.getServer().getScheduler().runTask(plugin, new Runnable()
+      {
+         public void run()
+         {
+            plugin.handleServiceModeChecks(p, p.getItemInHand()); // run on next tick
+         }
+      }); 
 
       return (task);
    }

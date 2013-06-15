@@ -1,6 +1,11 @@
 Changelog for ModGod by CubieX
 ------------------------------
 
+V.0.7.0
+- added missing check for nether perms and end environment check in InventoryCloseEvent
+- added several missing events to check conditions for service mode in *all* thinkable situations
+- combined handling of service mode checks to a single method for all relevant events
+
 V.0.6.4
 - added cleanup method on player quit to prevent inconsistent HashMap entries
   

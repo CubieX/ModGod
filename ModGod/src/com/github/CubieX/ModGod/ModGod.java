@@ -3,6 +3,7 @@ package com.github.CubieX.ModGod;
 import java.util.logging.Logger;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitTask;
 
@@ -74,6 +75,8 @@ public class ModGod extends JavaPlugin
       log.info(this.getDescription().getName() + " version " + getDescription().getVersion() + " is disabled!");
 
    }
+   
+   // ###################################################################################################
 
    public BukkitTask startWarmUpTimer_DelayedTask(Player player)
    {
@@ -90,9 +93,19 @@ public class ModGod extends JavaPlugin
       return (schedHandler.startGracePeriodTimer_Delayed(player));
    }
    
+   public BukkitTask startDelayedServiceModeCheckTimer_Task(Player player)
+   {
+      return (schedHandler.startDelayedServiceModeCheckTimer_Task(player));
+   }
+   
    public void disableServiceModeWithGrace(Player player)
    {
       eListener.disableServiceModeWithGrace(player);
+   }
+   
+   public void handleServiceModeChecks(Player player, ItemStack item)
+   {
+      eListener.handleServiceModeChecks(player, item);
    }
 }
 

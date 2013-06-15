@@ -1,6 +1,6 @@
 name: ModGod
 main: com.github.CubieX.ModGod.ModGod
-version: 0.6.4
+version: 0.7.0
 description: Gives Moderators god mode while holding hazardous items in hand. (e.g.Lava) 
 
 commands:
@@ -16,5 +16,5 @@ permissions:
         description: Allows using ModGod in the nether.
         default: false
     modgod.admin:
-        description: Allows use of /mg reload
+        description: Allows total control over the plugin
         default: op
